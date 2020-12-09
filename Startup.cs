@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Hangfire;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -11,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using netcoreapi_eventful_app.Services;
 
 namespace netcoreapi_eventful_app
 {
@@ -32,6 +34,11 @@ namespace netcoreapi_eventful_app
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "netcoreapi_eventful_app", Version = "v1" });
             });
+            services.AddHangfire(x => x.UseSqlServerStorage("Server=localhost;Database=HangfireEventfulApp;User Id=sa;Password=AbCdEf1@2#3(;MultipleActiveResultSets=true;"));
+            services.AddHangfireServer();
+
+            // Add Services
+            services.AddScoped<IHangfireEvents, HangfireEvents>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -53,7 +60,10 @@ namespace netcoreapi_eventful_app
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                //endpoints.MapControllerRoute("default", "{controller}/{action}/{id?}");
             });
+
+            app.UseHangfireDashboard();
         }
     }
 }
